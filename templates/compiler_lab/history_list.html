@@ -26,14 +26,14 @@
             <!-- Search Input -->
             <div class="col-md-5">
                 <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-surface border-subtle text-muted"><i class="bi bi-search"></i></span>
-                    <input type="text" name="q" class="form-control bg-surface border-subtle text-light" placeholder="Search by title or source snippet..." value="{{ query }}">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control" placeholder="Search by title or source snippet..." value="{{ query }}">
                 </div>
             </div>
 
             <!-- Status Filter -->
             <div class="col-6 col-md-3">
-                <select name="status" class="form-select form-select-sm bg-surface border-subtle text-light">
+                <select name="status" class="form-select form-select-sm" aria-label="Filter by status">
                     <option value="">All Statuses</option>
                     <option value="success" {% if status_filter == 'success' %}selected{% endif %}>Successful Runs</option>
                     <option value="failed" {% if status_filter == 'failed' %}selected{% endif %}>Flagged / Errors</option>
@@ -42,7 +42,7 @@
 
             <!-- Mode Filter -->
             <div class="col-6 col-md-3">
-                <select name="mode" class="form-select form-select-sm bg-surface border-subtle text-light">
+                <select name="mode" class="form-select form-select-sm" aria-label="Filter by compilation stage">
                     <option value="">All Stages</option>
                     <option value="all" {% if mode_filter == 'all' %}selected{% endif %}>Full Pipeline</option>
                     <option value="lexical" {% if mode_filter == 'lexical' %}selected{% endif %}>Lexical Analysis</option>

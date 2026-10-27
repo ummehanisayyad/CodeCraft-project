@@ -93,9 +93,9 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow cc-card border-subtle">
                             <li><h6 class="dropdown-header text-muted">Signed in as <strong>{{ user.username }}</strong></h6></li>
-                            <li><a class="dropdown-item text-light" href="{% url 'dashboard:index' %}"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
-                            <li><a class="dropdown-item text-light" href="{% url 'compiler_lab:history_list' %}"><i class="bi bi-clock-history me-2"></i> My History</a></li>
-                            <li><a class="dropdown-item text-light" href="{% url 'accounts:profile' %}"><i class="bi bi-gear-fill me-2"></i> Account Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'dashboard:index' %}"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{% url 'compiler_lab:history_list' %}"><i class="bi bi-clock-history me-2"></i> My History</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-gear-fill me-2"></i> Account Profile</a></li>
                             <li><hr class="dropdown-divider border-subtle"></li>
                             <li>
                                 <form method="post" action="{% url 'accounts:logout' %}">

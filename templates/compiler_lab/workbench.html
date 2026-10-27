@@ -25,7 +25,7 @@
                 <!-- Preset Template Dropdown -->
                 <div class="d-flex align-items-center gap-1">
                     <label for="example-preset-select" class="small text-secondary mb-0 me-1 d-none d-sm-inline">Preset:</label>
-                    <select id="example-preset-select" class="form-select form-select-sm bg-surface border-subtle text-light" style="max-width: 260px;" aria-label="Select code example template">
+                    <select id="example-preset-select" class="form-select form-select-sm" style="max-width: 260px;" aria-label="Select code example template">
                         <option value="">-- Choose Code Example --</option>
                         {% for ex in examples %}
                         <option value="{{ ex.id }}">{{ ex.title }}</option>
@@ -36,7 +36,7 @@
                 <!-- Analysis Mode Selector -->
                 <div class="d-flex align-items-center gap-1">
                     <label for="analysis-mode-select" class="small text-secondary mb-0 me-1 d-none d-sm-inline">Stage:</label>
-                    <select id="analysis-mode-select" class="form-select form-select-sm bg-surface border-subtle text-light" style="max-width: 170px;" aria-label="Select analysis stage">
+                    <select id="analysis-mode-select" class="form-select form-select-sm" style="max-width: 170px;" aria-label="Select analysis stage">
                         <option value="all" {% if initial_mode == 'all' %}selected{% endif %}>All Phases (Full)</option>
                         <option value="lexical" {% if initial_mode == 'lexical' %}selected{% endif %}>Lexical Analysis</option>
                         <option value="syntax" {% if initial_mode == 'syntax' %}selected{% endif %}>Syntax Tree (AST)</option>
