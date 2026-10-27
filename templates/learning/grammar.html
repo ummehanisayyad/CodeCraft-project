@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Edu-C Formal BNF Grammar & Language Specification — CodeCraft{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="text-center max-w-750 mx-auto mb-5">
+        <span class="badge bg-amber-500 text-dark fw-bold px-3 py-1 mb-2">Formal Specification</span>
+        <h2 class="display-6 fw-extrabold mb-2 text-gradient-primary">
+            Edu-C Language Subset & BNF Grammar
+        </h2>
+        <p class="text-secondary fs-6">
+            The formal syntax specification implemented by the CodeCraft compiler. Fully documented with supported tokens, production rules, operator precedence, and design boundaries.
+        </p>
+    </div>
+
+    <!-- Language Scope Overview -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6">
+            <div class="cc-card p-4 h-100 border-success">
+                <h5 class="fw-bold text-success mb-3"><i class="bi bi-check-circle-fill me-2"></i> Supported Language Constructs</h5>
+                <ul class="small text-secondary mb-0">
+                    <li class="mb-2"><strong>Data Types:</strong> <code>int</code>, <code>float</code>, <code>char</code>, <code>string</code>, <code>bool</code>, <code>void</code></li>
+                    <li class="mb-2"><strong>Variable Declarations:</strong> With and without initializers (e.g. <code>int x = 10;</code>, <code>float y;</code>)</li>
+                    <li class="mb-2"><strong>Assignments:</strong> Simple (<code>=</code>) and compound (<code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code>)</li>
+                    <li class="mb-2"><strong>Arithmetic Operators:</strong> <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code></li>
+                    <li class="mb-2"><strong>Relational Operators:</strong> <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code></li>
+                    <li class="mb-2"><strong>Logical Operators:</strong> <code>&&</code> (AND), <code>||</code> (OR), <code>!</code> (NOT)</li>
+                    <li class="mb-2"><strong>Conditional Statements:</strong> <code>if (condition) stmt else stmt</code></li>
+                    <li class="mb-2"><strong>Loop Constructs:</strong> <code>while (condition) stmt</code></li>
+                    <li class="mb-2"><strong>Block Scoping:</strong> Nested code blocks enclosed in <code>{ ... }</code></li>
+                    <li class="mb-2"><strong>Comments:</strong> Single-line (<code>// ...</code>) and multi-line (<code>/* ... */</code>)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="cc-card p-4 h-100 border-subtle">
+                <h5 class="fw-bold text-warning mb-3"><i class="bi bi-exclamation-triangle-fill me-2"></i> Intentionally Excluded Constructs</h5>
+                <p class="small text-muted mb-3">To maintain focus on core Third-Year Compiler Design concepts, the following advanced C features are omitted:</p>
+                <ul class="small text-secondary mb-0">
+                    <li class="mb-2"><strong class="text-light">Preprocessor Directives:</strong> <code>#include</code>, <code>#define</code>, and macro expansions.</li>
+                    <li class="mb-2"><strong class="text-light">Raw Pointers & Dereferencing:</strong> <code>*ptr</code>, <code>&amp;var</code>, and pointer arithmetic.</li>
+                    <li class="mb-2"><strong class="text-light">Composite Types:</strong> <code>struct</code>, <code>union</code>, and <code>enum</code> definitions.</li>
+                    <li class="mb-2"><strong class="text-light">Dynamic Memory Allocation:</strong> <code>malloc()</code>, <code>calloc()</code>, and <code>free()</code>.</li>
+                    <li class="mb-2"><strong class="text-light">Complex For Loops:</strong> <code>for (init; cond; step)</code> (use <code>while</code> loops instead).</li>
+                    <li class="mb-2"><strong class="text-light">Switch / Case Statements:</strong> (represented through nested <code>if-else</code> chains).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formal BNF Grammar Listing -->
+    <div class="cc-card p-4 p-md-5 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold text-light mb-0"><i class="bi bi-code-square me-2 text-indigo"></i> Backus-Naur Form (BNF) Production Rules</h4>
+            <span class="badge bg-surface border border-subtle text-cyan font-monospace">Context-Free Grammar</span>
+        </div>
+
+        <pre class="code-viewer-block text-cyan" style="font-size: 14px; line-height: 1.7;">
+<span class="text-secondary">/* 1. Program Structure */</span>
+&lt;program&gt;            ::= &lt;statement_list&gt;
+&lt;statement_list&gt;     ::= &lt;statement&gt; &lt;statement_list&gt; | &epsilon;
+
+<span class="text-secondary">/* 2. Statements */</span>
+&lt;statement&gt;          ::= &lt;var_decl&gt;
+                       | &lt;assignment_stmt&gt;
+                       | &lt;if_stmt&gt;
+                       | &lt;while_stmt&gt;
+                       | &lt;return_stmt&gt;
+                       | &lt;block&gt;
+                       | &lt;expr_stmt&gt;
+                       | ';'
+
+&lt;var_decl&gt;           ::= &lt;type&gt; IDENTIFIER ( '=' &lt;expression&gt; )? ';'
+&lt;type&gt;               ::= 'int' | 'float' | 'char' | 'string' | 'bool' | 'void'
+
+&lt;assignment_stmt&gt;    ::= IDENTIFIER &lt;assign_op&gt; &lt;expression&gt; ';'
+&lt;assign_op&gt;          ::= '=' | '+=' | '-=' | '*=' | '/='
+
+&lt;if_stmt&gt;            ::= 'if' '(' &lt;expression&gt; ')' &lt;statement&gt; ( 'else' &lt;statement&gt; )?
+&lt;while_stmt&gt;         ::= 'while' '(' &lt;expression&gt; ')' &lt;statement&gt;
+&lt;return_stmt&gt;        ::= 'return' ( &lt;expression&gt; )? ';'
+&lt;block&gt;              ::= '{' &lt;statement_list&gt; '}'
+&lt;expr_stmt&gt;          ::= &lt;expression&gt; ';'
+
+<span class="text-secondary">/* 3. Expressions & Precedence Hierarchy (Tightest to Loosest) */</span>
+&lt;expression&gt;         ::= &lt;logical_or&gt;
+
+&lt;logical_or&gt;         ::= &lt;logical_and&gt; ( '||' &lt;logical_and&gt; )*
+&lt;logical_and&gt;        ::= &lt;equality&gt; ( '&amp;&amp;' &lt;equality&gt; )*
+&lt;equality&gt;           ::= &lt;relational&gt; ( ( '==' | '!=' ) &lt;relational&gt; )*
+&lt;relational&gt;         ::= &lt;additive&gt; ( ( '&lt;' | '&lt;=' | '&gt;' | '&gt;=' ) &lt;additive&gt; )*
+&lt;additive&gt;           ::= &lt;multiplicative&gt; ( ( '+' | '-' ) &lt;multiplicative&gt; )*
+&lt;multiplicative&gt;     ::= &lt;unary&gt; ( ( '*' | '/' | '%' ) &lt;unary&gt; )*
+&lt;unary&gt;              ::= ( '!' | '-' | '+' ) &lt;unary&gt; | &lt;primary&gt;
+
+<span class="text-secondary">/* 4. Terminals & Primaries */</span>
+&lt;primary&gt;            ::= IDENTIFIER
+                       | INT_LITERAL
+                       | FLOAT_LITERAL
+                       | STRING_LITERAL
+                       | CHAR_LITERAL
+                       | 'true'
+                       | 'false'
+                       | '(' &lt;expression&gt; ')'
+        </pre>
+    </div>
+
+    <!-- Precedence & Associativity Table -->
+    <div class="cc-card p-4 p-md-5">
+        <h4 class="fw-bold text-light mb-4"><i class="bi bi-layers-half me-2 text-cyan"></i> Operator Precedence & Associativity</h4>
+        <div class="table-responsive">
+            <table class="table-cc">
+                <thead>
+                    <tr>
+                        <th>Precedence Level</th>
+                        <th>Operators</th>
+                        <th>Description</th>
+                        <th>Associativity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1 (Highest)</strong></td>
+                        <td><code>( )</code></td>
+                        <td>Parenthesized Grouping</td>
+                        <td>Left to Right</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2</strong></td>
+                        <td><code>!</code>, <code>-</code> (unary), <code>+</code> (unary)</td>
+                        <td>Logical NOT, Unary Negation</td>
+                        <td>Right to Left</td>
+                    </tr>
+                    <tr>
+                        <td><strong>3</strong></td>
+                        <td><code>*</code>, <code>/</code>, <code>%</code></td>
+                        <td>Multiplication, Division, Modulo</td>
+                        <td>Left to Right</td>
+                    </tr>
+                    <tr>
+                        <td><strong>4</strong></td>
+                        <td><code>+</code>, <code>-</code></td>
+                        <td>Addition, Subtraction</td>
+                        <td>Left to Right</td>
+                    </tr>
+                    <tr>
+                        <td><strong>5</strong></td>
+                        <td><code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code></td>
+                        <td>Relational Comparisons</td>
+                        <td>Left to Right</td>
+                    </tr>
+                    <tr>
+                        <td><strong>6</strong></td>
+                        <td><code>==</code>, <code>!=</code></td>
+                        <td>Equality & Inequality</td>
+                        <td>Left to Right</td>
+                    </tr>
+                    <tr>
+                        <td><strong>7</strong></td>
+                        <td><code>&amp;&amp;</code></td>
+                        <td>Logical AND (short-circuit)</td>
+                        <td>Left to Right</td>
+                    </tr>
+                    <tr>
+                        <td><strong>8</strong></td>
+                        <td><code>||</code></td>
+                        <td>Logical OR (short-circuit)</td>
+                        <td>Left to Right</td>
+                    </tr>
+                    <tr>
+                        <td><strong>9 (Lowest)</strong></td>
+                        <td><code>=</code>, <code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code></td>
+                        <td>Assignment Operations</td>
+                        <td>Right to Left</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

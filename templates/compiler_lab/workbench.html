@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Compiler Workbench — CodeCraft IDE{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-4">
+    <!-- CSRF Token for AJAX requests -->
+    {% csrf_token %}
+
+    <!-- Workbench Header Bar -->
+    <div class="row align-items-center mb-3 g-3">
+        <div class="col-md-5">
+            <div class="d-flex align-items-center gap-2">
+                <h4 class="fw-bold mb-0 text-gradient-primary">
+                    <i class="bi bi-terminal-fill me-2"></i>Compiler Workbench
+                </h4>
+                <span class="badge bg-surface border border-subtle text-cyan font-monospace py-1 px-2">Edu-C v1.0</span>
+            </div>
+            <p class="small text-muted mb-0">Multi-stage lexical, syntactic, semantic, and intermediate code analysis.</p>
+        </div>
+
+        <div class="col-md-7">
+            <div class="d-flex flex-wrap align-items-center justify-content-md-end gap-2">
+                <!-- Preset Template Dropdown -->
+                <div class="d-flex align-items-center gap-1">
+                    <label for="example-preset-select" class="small text-secondary mb-0 me-1 d-none d-sm-inline">Preset:</label>
+                    <select id="example-preset-select" class="form-select form-select-sm bg-surface border-subtle text-light" style="max-width: 260px;" aria-label="Select code example template">
+                        <option value="">-- Choose Code Example --</option>
+                        {% for ex in examples %}
+                        <option value="{{ ex.id }}">{{ ex.title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Analysis Mode Selector -->
+                <div class="d-flex align-items-center gap-1">
+                    <label for="analysis-mode-select" class="small text-secondary mb-0 me-1 d-none d-sm-inline">Stage:</label>
+                    <select id="analysis-mode-select" class="form-select form-select-sm bg-surface border-subtle text-light" style="max-width: 170px;" aria-label="Select analysis stage">
+                        <option value="all" {% if initial_mode == 'all' %}selected{% endif %}>All Phases (Full)</option>
+                        <option value="lexical" {% if initial_mode == 'lexical' %}selected{% endif %}>Lexical Analysis</option>
+                        <option value="syntax" {% if initial_mode == 'syntax' %}selected{% endif %}>Syntax Tree (AST)</option>
+                        <option value="semantic" {% if initial_mode == 'semantic' %}selected{% endif %}>Semantic & Symbol</option>
+                        <option value="tac" {% if initial_mode == 'tac' %}selected{% endif %}>Intermediate TAC</option>
+                    </select>
+                </div>
+
+                <!-- Clear Button -->
+                <button type="button" id="btn-clear-code" class="btn btn-sm btn-cc-secondary" title="Clear Code Editor" aria-label="Clear code">
+                    <i class="bi bi-trash3 text-muted"></i> Clear
+                </button>
+
+                <!-- Run Analysis Button -->
+                <button type="button" id="btn-run-analysis" class="btn btn-sm btn-cc-primary px-3 py-2" title="Execute Pipeline (Ctrl+Enter)" aria-label="Run compiler analysis">
+                    <i class="bi bi-play-fill fs-6"></i> Run Analysis
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Workbench Workspace Split -->
+    <div class="row g-3">
+        <!-- Left Column: Source Code Editor -->
+        <div class="col-lg-5">
+            <div class="cc-card h-100 d-flex flex-column">
+                <div class="cc-card-header">
+                    <div class="d-flex align-items-center gap-2 flex-grow-1 me-2">
+                        <i class="bi bi-code-slash text-indigo"></i>
+                        <input type="text" id="analysis-title-input" class="form-control form-control-sm bg-transparent border-0 text-light fw-semibold p-0 shadow-none" value="{{ initial_title|default:'Interactive Analysis' }}" placeholder="Analysis Title" aria-label="Analysis title">
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="editor-stats-pill" class="badge bg-surface border border-subtle text-muted small font-monospace">0 lines</span>
+                    </div>
+                </div>
+
+                <div class="cc-card-body p-0 flex-grow-1">
+                    <textarea id="code-editor" name="code" aria-label="Source code editor">{{ initial_code }}</textarea>
+                </div>
+
+                <!-- Editor Footer Controls -->
+                <div class="p-2 px-3 border-top border-subtle d-flex justify-content-between align-items-center bg-surface small">
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="analysis-optimize-check" checked>
+                        <label class="form-check-label text-secondary small" for="analysis-optimize-check">Enable Optimization Pass</label>
+                    </div>
+                    <span class="text-muted font-monospace small"><kbd class="bg-dark text-muted">Ctrl</kbd> + <kbd class="bg-dark text-muted">Enter</kbd> to Run</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Compilation Stage Outputs -->
+        <div class="col-lg-7">
+            <div class="cc-card h-100 d-flex flex-column">
+                <!-- Tabs Navigation -->
+                <div class="p-2 border-bottom border-subtle bg-surface">
+                    <ul class="nav nav-tabs nav-tabs-cc" id="workbenchTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-summary-btn" data-bs-toggle="tab" data-bs-target="#tab-summary" type="button" role="tab" aria-controls="tab-summary" aria-selected="true">
+                                <i class="bi bi-speedometer2"></i> Summary
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-tokens-btn" data-bs-toggle="tab" data-bs-target="#tab-tokens" type="button" role="tab" aria-controls="tab-tokens" aria-selected="false">
+                                <i class="bi bi-card-list"></i> Tokens <span id="tokens-count-badge" class="badge bg-secondary ms-1">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-syntax-btn" data-bs-toggle="tab" data-bs-target="#tab-syntax" type="button" role="tab" aria-controls="tab-syntax" aria-selected="false">
+                                <i class="bi bi-diagram-3"></i> Syntax Tree
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-semantic-btn" data-bs-toggle="tab" data-bs-target="#tab-semantic" type="button" role="tab" aria-controls="tab-semantic" aria-selected="false">
+                                <i class="bi bi-table"></i> Symbol Table <span id="symbol-count-badge" class="badge bg-secondary ms-1">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-tac-btn" data-bs-toggle="tab" data-bs-target="#tab-tac" type="button" role="tab" aria-controls="tab-tac" aria-selected="false">
+                                <i class="bi bi-code-square"></i> Intermediate (TAC) <span id="tac-count-badge" class="badge bg-secondary ms-1">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-optimizer-btn" data-bs-toggle="tab" data-bs-target="#tab-optimizer" type="button" role="tab" aria-controls="tab-optimizer" aria-selected="false">
+                                <i class="bi bi-lightning-charge"></i> Optimization
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-danger" id="tab-error-diagnostics-btn" data-bs-toggle="tab" data-bs-target="#tab-error-diagnostics" type="button" role="tab" aria-controls="tab-error-diagnostics" aria-selected="false">
+                                <i class="bi bi-exclamation-octagon"></i> Errors
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Tab Panes Container -->
+                <div class="cc-card-body p-3 flex-grow-1 overflow-auto" style="min-height: 480px; max-height: 650px;">
+                    <!-- Initial Empty State -->
+                    <div id="output-empty-state" class="text-center py-5">
+                        <div class="p-4 rounded-circle bg-primary-glow d-inline-block text-indigo mb-3 fs-1">
+                            <i class="bi bi-cpu"></i>
+                        </div>
+                        <h5 class="fw-bold text-light mb-2">Compiler Pipeline Ready</h5>
+                        <p class="text-secondary small max-w-500 mx-auto mb-4">
+                            Click <strong>"Run Analysis"</strong> above or press <kbd class="bg-dark text-muted">Ctrl+Enter</kbd> to execute lexical scanning, recursive-descent parsing, semantic symbol validation, and intermediate code generation.
+                        </p>
+                        <div class="d-inline-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-cc-primary" onclick="document.getElementById('btn-run-analysis').click()">
+                                <i class="bi bi-play-fill me-1"></i> Analyze Current Source
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Active Results Container -->
+                    <div id="output-results-container" class="d-none">
+                        <!-- Top Execution Summary Ribbon -->
+                        <div class="d-flex flex-wrap align-items-center justify-content-between p-3 mb-3 rounded bg-surface border border-subtle">
+                            <div class="d-flex align-items-center gap-2 mb-2 mb-md-0">
+                                <span id="status-badge" class="badge bg-success px-3 py-2 text-white">Status</span>
+                                <span class="small text-secondary">Latency: <strong id="execution-latency" class="text-cyan">0 ms</strong></span>
+                            </div>
+                            <div id="saved-record-link" class="d-flex align-items-center gap-2">
+                                <!-- Saved status pill rendered by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Tab Content Bodies -->
+                        <div class="tab-content" id="workbenchTabContent">
+                            <!-- Tab 0: Summary -->
+                            <div class="tab-pane fade show active" id="tab-summary" role="tabpanel" aria-labelledby="tab-summary-btn">
+                                <h6 class="fw-bold text-light mb-3"><i class="bi bi-stopwatch me-1 text-cyan"></i> Stage Execution Latencies</h6>
+                                <div id="timings-grid" class="row g-2 mb-4">
+                                    <!-- Timings rendered by JS -->
+                                </div>
+
+                                <h6 class="fw-bold text-light mb-2"><i class="bi bi-info-circle me-1 text-indigo"></i> Pipeline Features Implemented</h6>
+                                <div class="row g-2 small text-secondary">
+                                    <div class="col-md-6">
+                                        <ul class="list-unstyled mb-0">
+                                            <li><i class="bi bi-check-lg text-emerald me-1"></i> <strong>Lexer:</strong> Token categorization with line & col</li>
+                                            <li><i class="bi bi-check-lg text-emerald me-1"></i> <strong>Parser:</strong> Predictive recursive descent AST</li>
+                                            <li><i class="bi bi-check-lg text-emerald me-1"></i> <strong>Semantics:</strong> Multi-scope hierarchical symbol table</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <ul class="list-unstyled mb-0">
+                                            <li><i class="bi bi-check-lg text-emerald me-1"></i> <strong>ICG:</strong> Three-Address Code instructions & quadruples</li>
+                                            <li><i class="bi bi-check-lg text-emerald me-1"></i> <strong>Optimizer:</strong> Constant folding & algebraic simplification</li>
+                                            <li><i class="bi bi-check-lg text-emerald me-1"></i> <strong>Safety:</strong> Sandboxed evaluation with no OS execution</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab 1: Tokens -->
+                            <div class="tab-pane fade" id="tab-tokens" role="tabpanel" aria-labelledby="tab-tokens-btn">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="position-relative flex-grow-1 me-3" style="max-width: 300px;">
+                                        <input type="text" id="token-search-input" class="form-control form-control-sm bg-surface border-subtle text-light" placeholder="Search tokens or types..." aria-label="Search tokens">
+                                    </div>
+                                    <span class="small text-muted">Token Table (Tokens, Lexemes & Coordinates)</span>
+                                </div>
+                                <div class="table-responsive" style="max-height: 480px;">
+                                    <table class="table-cc">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 60px;">#</th>
+                                                <th>Lexeme</th>
+                                                <th>Token Type</th>
+                                                <th style="width: 70px;">Line</th>
+                                                <th style="width: 70px;">Col</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tokens-table-body">
+                                            <!-- Injected by workbench.js -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Tab 2: Syntax Tree (AST) -->
+                            <div class="tab-pane fade" id="tab-syntax" role="tabpanel" aria-labelledby="tab-syntax-btn">
+                                <ul class="nav nav-pills mb-3 gap-2" id="astViewPills" role="tablist">
+                                    <li class="nav-item">
+                                        <button class="btn btn-sm btn-cc-secondary active" id="pill-mermaid-btn" data-bs-toggle="pill" data-bs-target="#pill-mermaid" type="button" role="tab">
+                                            <i class="bi bi-diagram-3-fill me-1"></i> Visual Diagram
+                                        </button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="btn btn-sm btn-cc-secondary" id="pill-text-tree-btn" data-bs-toggle="pill" data-bs-target="#pill-text-tree" type="button" role="tab">
+                                            <i class="bi bi-list-nested me-1"></i> ASCII Hierarchy
+                                        </button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="btn btn-sm btn-cc-secondary" id="pill-json-tree-btn" data-bs-toggle="pill" data-bs-target="#pill-json-tree" type="button" role="tab">
+                                            <i class="bi bi-file-earmark-code me-1"></i> JSON AST
+                                        </button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content" id="astViewPillsContent">
+                                    <div class="tab-pane fade show active" id="pill-mermaid" role="tabpanel">
+                                        <div id="syntax-tree-mermaid" class="p-3 rounded bg-surface border border-subtle overflow-auto text-center" style="min-height: 350px;">
+                                            <!-- Rendered by Mermaid.js -->
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="pill-text-tree" role="tabpanel">
+                                        <pre id="syntax-text-tree" class="code-viewer-block" style="min-height: 350px;"></pre>
+                                    </div>
+                                    <div class="tab-pane fade" id="pill-json-tree" role="tabpanel">
+                                        <pre id="syntax-json-tree" class="code-viewer-block text-cyan" style="min-height: 350px;"></pre>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab 3: Symbol Table & Semantics -->
+                            <div class="tab-pane fade" id="tab-semantic" role="tabpanel" aria-labelledby="tab-semantic-btn">
+                                <div id="semantic-alerts-container" class="mb-3">
+                                    <!-- Injected by workbench.js -->
+                                </div>
+
+                                <h6 class="fw-bold text-light mb-2"><i class="bi bi-table me-1 text-cyan"></i> Symbol Table Entries</h6>
+                                <div class="table-responsive mb-3">
+                                    <table class="table-cc">
+                                        <thead>
+                                            <tr>
+                                                <th>Identifier</th>
+                                                <th>Data Type</th>
+                                                <th>Scope Level</th>
+                                                <th>Declared Line</th>
+                                                <th>Initialized</th>
+                                                <th>Memory Bytes</th>
+                                                <th>Kind</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="symbol-table-body">
+                                            <!-- Injected by workbench.js -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Tab 4: Intermediate Code Generation (TAC & Quadruples) -->
+                            <div class="tab-pane fade" id="tab-tac" role="tabpanel" aria-labelledby="tab-tac-btn">
+                                <div class="row g-3">
+                                    <!-- Three-Address Code Statements -->
+                                    <div class="col-lg-5">
+                                        <h6 class="fw-bold text-light mb-2 d-flex justify-content-between">
+                                            <span>Three-Address Code (TAC)</span>
+                                            <span class="small text-muted">Linearized Instructions</span>
+                                        </h6>
+                                        <div id="tac-instructions-container" class="code-viewer-block p-0" style="min-height: 320px;">
+                                            <!-- Injected by workbench.js -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Quadruples Table -->
+                                    <div class="col-lg-7">
+                                        <h6 class="fw-bold text-light mb-2 d-flex justify-content-between">
+                                            <span>Quadruples Representation</span>
+                                            <span class="small text-muted">(Op, Arg1, Arg2, Result)</span>
+                                        </h6>
+                                        <div class="table-responsive" style="max-height: 380px;">
+                                            <table class="table-cc">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Index</th>
+                                                        <th>Op</th>
+                                                        <th>Arg1</th>
+                                                        <th>Arg2</th>
+                                                        <th>Result</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="quadruples-table-body">
+                                                    <!-- Injected by workbench.js -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab 5: Code Optimization -->
+                            <div class="tab-pane fade" id="tab-optimizer" role="tabpanel" aria-labelledby="tab-optimizer-btn">
+                                <div id="optimization-stats" class="p-2 mb-3 rounded bg-surface border border-subtle">
+                                    <!-- Rendered by JS -->
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <h6 class="fw-bold text-light mb-2">Optimized Instructions</h6>
+                                        <div id="optimized-tac-container" class="code-viewer-block p-0" style="min-height: 250px;">
+                                            <!-- Injected by workbench.js -->
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="fw-bold text-light mb-2">Applied Transformations</h6>
+                                        <div id="optimizations-list" class="p-2 rounded bg-surface border border-subtle" style="min-height: 250px; max-height: 320px; overflow-y: auto;">
+                                            <!-- Injected by workbench.js -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab 6: Error Diagnostics -->
+                            <div class="tab-pane fade" id="tab-error-diagnostics" role="tabpanel" aria-labelledby="tab-error-diagnostics-btn">
+                                <div id="error-diagnostics-container">
+                                    <!-- Injected by workbench.js -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/workbench.js' %}"></script>
+{% endblock %}

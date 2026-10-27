@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ record.title }} — Analysis Report #{{ record.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{% url 'compiler_lab:history_list' %}" class="text-indigo text-decoration-none">Analysis History</a></li>
+            <li class="breadcrumb-item active text-secondary" aria-current="page">Record #{{ record.id }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header Card -->
+    <div class="cc-card p-4 mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <h3 class="fw-bold mb-0 text-light">{{ record.title }}</h3>
+                    <span class="badge bg-surface border border-subtle text-secondary font-monospace">#{{ record.id }}</span>
+                    {% if record.is_success %}
+                    <span class="badge bg-success-subtle text-success px-3 py-2"><i class="bi bi-check-circle-fill me-1"></i> Success</span>
+                    {% else %}
+                    <span class="badge bg-danger-subtle text-danger px-3 py-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> {{ record.error_stage|default:"Error"|upper }}</span>
+                    {% endif %}
+                </div>
+                <div class="d-flex flex-wrap gap-3 small text-muted">
+                    <span><i class="bi bi-calendar3 me-1"></i> Executed: {{ record.created_at|date:"F d, Y at H:i:s" }}</span>
+                    <span><i class="bi bi-stopwatch me-1"></i> Total Latency: <strong class="text-cyan">{{ record.execution_time_ms }} ms</strong></span>
+                    <span><i class="bi bi-card-checklist me-1"></i> Tokens: <strong class="text-violet">{{ record.token_count }}</strong></span>
+                    <span><i class="bi bi-sliders me-1"></i> Mode: <strong class="text-indigo">{{ record.mode|upper }}</strong></span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2">
+                <a href="{% url 'compiler_lab:workbench' %}?record={{ record.id }}" class="btn-cc-primary">
+                    <i class="bi bi-arrow-repeat"></i> Reopen in Workbench
+                </a>
+                <a href="{% url 'compiler_lab:history_export_json' record.id %}" class="btn-cc-secondary" title="Download JSON Dump">
+                    <i class="bi bi-download"></i> Export JSON
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Source Code Section -->
+    <div class="cc-card mb-4">
+        <div class="cc-card-header">
+            <h6 class="fw-bold mb-0"><i class="bi bi-code-slash text-indigo me-2"></i>Analyzed Source Code</h6>
+            <button class="btn btn-sm btn-cc-secondary py-1 px-2" onclick="navigator.clipboard.writeText(document.getElementById('raw-source-code').textContent); alert('Copied source code to clipboard!');">
+                <i class="bi bi-clipboard"></i> Copy
+            </button>
+        </div>
+        <div class="cc-card-body p-0">
+            <pre id="raw-source-code" class="code-viewer-block m-0 border-0" style="max-height: 250px;">{{ record.source_code }}</pre>
+        </div>
+    </div>
+
+    <!-- Error Banner if failed -->
+    {% if not record.is_success %}
+    <div class="alert alert-danger mb-4">
+        <div class="d-flex align-items-center mb-1">
+            <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+            <strong>Compilation Failed in {{ record.error_stage|upper }} Stage</strong>
+        </div>
+        <p class="mb-0">{{ record.error_message }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Multi-Tab Phase Inspector -->
+    <div class="cc-card">
+        <div class="p-2 border-bottom border-subtle bg-surface">
+            <ul class="nav nav-tabs nav-tabs-cc" id="detailTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" id="det-tokens-btn" data-bs-toggle="tab" data-bs-target="#det-tokens" type="button" role="tab">
+                        <i class="bi bi-card-list"></i> Tokens ({{ record.tokens_json|length }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="det-syntax-btn" data-bs-toggle="tab" data-bs-target="#det-syntax" type="button" role="tab">
+                        <i class="bi bi-diagram-3"></i> Syntax Tree (AST)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="det-semantic-btn" data-bs-toggle="tab" data-bs-target="#det-semantic" type="button" role="tab">
+                        <i class="bi bi-table"></i> Symbol Table ({{ record.symbols_json|length }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="det-tac-btn" data-bs-toggle="tab" data-bs-target="#det-tac" type="button" role="tab">
+                        <i class="bi bi-code-square"></i> Three-Address Code & Quadruples
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="det-opt-btn" data-bs-toggle="tab" data-bs-target="#det-opt" type="button" role="tab">
+                        <i class="bi bi-lightning-charge"></i> Optimization Passes
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="cc-card-body p-3">
+            <div class="tab-content" id="detailTabContent">
+                <!-- Tokens Tab -->
+                <div class="tab-pane fade show active" id="det-tokens" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table-cc">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">#</th>
+                                    <th>Lexeme</th>
+                                    <th>Token Type</th>
+                                    <th>Line</th>
+                                    <th>Column</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tok in record.tokens_json %}
+                                <tr>
+                                    <td class="text-muted fw-bold">{{ tok.index }}</td>
+                                    <td><code class="px-2 py-1 bg-code rounded text-info">{{ tok.lexeme }}</code></td>
+                                    <td><span class="badge bg-secondary">{{ tok.type }}</span></td>
+                                    <td>{{ tok.line }}</td>
+                                    <td>{{ tok.column }}</td>
+                                    <td class="small text-secondary">{{ tok.description }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="6" class="text-center text-muted py-4">No tokens recorded.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Syntax Tab -->
+                <div class="tab-pane fade" id="det-syntax" role="tabpanel">
+                    {% if record.mermaid_graph %}
+                    <div class="p-3 rounded bg-surface border border-subtle text-center mb-3 overflow-auto">
+                        <div class="mermaid">{{ record.mermaid_graph }}</div>
+                    </div>
+                    {% endif %}
+
+                    {% if record.text_tree %}
+                    <h6 class="fw-bold text-light mb-2">ASCII Hierarchy</h6>
+                    <pre class="code-viewer-block mb-3">{{ record.text_tree }}</pre>
+                    {% endif %}
+                </div>
+
+                <!-- Symbol Table Tab -->
+                <div class="tab-pane fade" id="det-semantic" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table-cc">
+                            <thead>
+                                <tr>
+                                    <th>Identifier</th>
+                                    <th>Type</th>
+                                    <th>Scope</th>
+                                    <th>Declared Line</th>
+                                    <th>Initialized</th>
+                                    <th>Memory Size</th>
+                                    <th>Kind</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sym in record.symbols_json %}
+                                <tr>
+                                    <td><strong class="text-indigo">{{ sym.name }}</strong></td>
+                                    <td><span class="badge bg-info-subtle text-info">{{ sym.type }}</span></td>
+                                    <td>{{ sym.scope_name }} (L{{ sym.scope_level }})</td>
+                                    <td>Line {{ sym.line }}</td>
+                                    <td>
+                                        {% if sym.is_initialized %}
+                                        <span class="badge bg-success-subtle text-success">Initialized</span>
+                                        {% else %}
+                                        <span class="badge bg-warning-subtle text-warning">Uninitialized</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ sym.memory_bytes }} B</td>
+                                    <td class="small text-muted">{{ sym.kind }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="7" class="text-center text-muted py-4">No symbols in this record.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAC Tab -->
+                <div class="tab-pane fade" id="det-tac" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-lg-5">
+                            <h6 class="fw-bold text-light mb-2">Three-Address Code</h6>
+                            <div class="code-viewer-block p-3">
+                                {% for inst in record.tac_instructions %}
+                                <div><span class="text-muted me-2">{{ forloop.counter }}:</span> {{ inst }}</div>
+                                {% empty %}
+                                <div class="text-muted">No TAC instructions generated.</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-lg-7">
+                            <h6 class="fw-bold text-light mb-2">Quadruples</h6>
+                            <div class="table-responsive">
+                                <table class="table-cc">
+                                    <thead>
+                                        <tr>
+                                            <th>Index</th>
+                                            <th>Op</th>
+                                            <th>Arg1</th>
+                                            <th>Arg2</th>
+                                            <th>Result</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for q in record.quadruples_json %}
+                                        <tr>
+                                            <td class="text-muted fw-bold">({{ q.index }})</td>
+                                            <td><span class="badge bg-indigo-500">{{ q.op }}</span></td>
+                                            <td><code>{{ q.arg1 }}</code></td>
+                                            <td><code>{{ q.arg2 }}</code></td>
+                                            <td><code>{{ q.result }}</code></td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr><td colspan="5" class="text-center text-muted py-4">No quadruples recorded.</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Optimization Tab -->
+                <div class="tab-pane fade" id="det-opt" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-light mb-2">Optimized Instructions</h6>
+                            <div class="code-viewer-block p-3">
+                                {% for inst in record.optimized_tac %}
+                                <div><span class="text-muted me-2">{{ forloop.counter }}:</span> {{ inst }}</div>
+                                {% empty %}
+                                <div class="text-muted">No optimized instructions.</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-light mb-2">Transformations Applied</h6>
+                            {% for tr in record.optimizations_json %}
+                            <div class="p-2 mb-2 rounded bg-surface border border-subtle">
+                                <span class="badge bg-emerald-500 text-white mb-1">{{ tr.type }}</span>
+                                <div class="font-monospace small">
+                                    <span class="text-danger text-decoration-line-through">{{ tr.before }}</span>
+                                    <i class="bi bi-arrow-right mx-2 text-muted"></i>
+                                    <span class="text-success fw-bold">{{ tr.after }}</span>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="text-muted p-3 text-center">No optimization transformations applied.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.mermaid) {
+        mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+    }
+});
+</script>
+{% endblock %}

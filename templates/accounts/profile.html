@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Account Profile — CodeCraft{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4 justify-content-center">
+        <div class="col-lg-8">
+            <!-- Profile Card -->
+            <div class="cc-card p-4 mb-4">
+                <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom border-subtle">
+                    <div class="p-3 rounded-circle bg-primary-glow text-indigo fs-2">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-1 text-light">{{ user.username }}</h4>
+                        <div class="text-secondary small">
+                            <span class="me-3"><i class="bi bi-envelope me-1"></i> {{ user.email|default:"No email configured" }}</span>
+                            <span><i class="bi bi-calendar me-1"></i> Member since {{ user.date_joined|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-4">
+                        <div class="p-3 rounded bg-surface border border-subtle text-center">
+                            <div class="small text-secondary">Total Analyses</div>
+                            <div class="h3 fw-bold text-light mb-0">{{ total_count }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="p-3 rounded bg-surface border border-subtle text-center">
+                            <div class="small text-secondary">Successful</div>
+                            <div class="h3 fw-bold text-emerald mb-0">{{ success_count }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="p-3 rounded bg-surface border border-subtle text-center">
+                            <div class="small text-secondary">Flagged Errors</div>
+                            <div class="h3 fw-bold text-danger mb-0">{{ failed_count }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <a href="{% url 'compiler_lab:history_list' %}" class="btn-cc-primary">
+                        <i class="bi bi-clock-history me-1"></i> View All Analysis History
+                    </a>
+                    <a href="{% url 'compiler_lab:workbench' %}" class="btn-cc-secondary">
+                        <i class="bi bi-play-circle-fill me-1"></i> Open Workbench
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Runs Card -->
+            <div class="cc-card">
+                <div class="cc-card-header">
+                    <h6 class="fw-bold mb-0">Recent Analyses</h6>
+                </div>
+                <div class="cc-card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for rec in recent_analyses %}
+                        <li class="list-group-item bg-transparent text-light border-subtle d-flex justify-content-between align-items-center py-3">
+                            <div>
+                                <a href="{% url 'compiler_lab:history_detail' rec.id %}" class="fw-semibold text-light text-decoration-none hover-indigo">
+                                    {{ rec.title }}
+                                </a>
+                                <div class="small text-muted font-monospace">{{ rec.snippet }}</div>
+                            </div>
+                            <div class="text-end">
+                                {% if rec.is_success %}
+                                <span class="badge bg-success-subtle text-success mb-1 d-block">Success</span>
+                                {% else %}
+                                <span class="badge bg-danger-subtle text-danger mb-1 d-block">Error</span>
+                                {% endif %}
+                                <span class="small text-muted">{{ rec.created_at|date:"M d, H:i" }}</span>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item bg-transparent text-muted text-center py-4">No recent analyses.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

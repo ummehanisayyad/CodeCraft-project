@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create Account — CodeCraft{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="cc-card p-4 p-md-5 shadow-lg border-subtle">
+                <div class="text-center mb-4">
+                    <div class="brand-badge fs-5 py-2 px-3 d-inline-flex mb-3">
+                        <i class="bi bi-cpu-fill text-cyan"></i> CodeCraft
+                    </div>
+                    <h4 class="fw-bold text-light mb-1">Create Student Account</h4>
+                    <p class="text-secondary small">Start saving your compiler analysis runs, AST diagrams, and TAC outputs</p>
+                </div>
+
+                <form method="post" action="{% url 'accounts:register' %}" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger py-2 small mb-3">
+                        {{ form.non_field_errors.0 }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Username -->
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label small text-secondary fw-semibold">Username *</label>
+                        {{ form.username }}
+                        <div class="form-text small text-muted">Letters, digits, and @/./+/-/_ only.</div>
+                        {% if form.username.errors %}
+                        <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Names row -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label for="id_first_name" class="form-label small text-secondary fw-semibold">First Name</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="id_last_name" class="form-label small text-secondary fw-semibold">Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label small text-secondary fw-semibold">Email Address *</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Passwords -->
+                    <div class="mb-3">
+                        <label for="id_password1" class="form-label small text-secondary fw-semibold">Password *</label>
+                        {{ form.password1 }}
+                        <div class="form-text small text-muted">Must be at least 8 characters long.</div>
+                        {% if form.password1.errors %}
+                        <div class="text-danger small mt-1">{{ form.password1.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="id_password2" class="form-label small text-secondary fw-semibold">Confirm Password *</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                        <div class="text-danger small mt-1">{{ form.password2.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn-cc-primary w-100 justify-content-center py-2 mb-3">
+                        <i class="bi bi-person-check-fill"></i> Complete Registration
+                    </button>
+
+                    <div class="text-center small text-secondary">
+                        Already have an account? <a href="{% url 'accounts:login' %}" class="text-indigo fw-semibold text-decoration-none">Sign in here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

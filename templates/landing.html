@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}CodeCraft — Interactive Compiler Design & Code Analysis Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="py-5 position-relative overflow-hidden" style="background: radial-gradient(circle at 50% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 60%);">
+    <div class="container py-lg-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7 text-center text-lg-start">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3 border border-subtle bg-surface">
+                    <span class="badge bg-indigo-500 text-white px-2 py-1 fs-8">B.E. CSE Lab</span>
+                    <span class="small text-secondary fw-medium">{{ ACADEMIC_COURSE }} &bull; {{ ACADEMIC_YEAR }}</span>
+                </div>
+                <h1 class="display-4 fw-extrabold mb-3 lh-sm">
+                    Interactive Compiler Design <br>
+                    <span class="text-gradient-primary">Code Analysis Platform</span>
+                </h1>
+                <p class="lead text-secondary mb-4 fs-5 pe-lg-4">
+                    Explore the complete 6-stage classical compilation pipeline in real-time. Watch your C-subset code transform from raw lexemes into verified syntax trees, multi-scope symbol tables, optimized Three-Address Code, and quadruples.
+                </p>
+                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start mb-4">
+                    <a href="{% url 'compiler_lab:workbench' %}" class="btn-cc-primary px-4 py-3 fs-6">
+                        <i class="bi bi-play-circle-fill fs-5"></i> Launch Compiler Workbench
+                    </a>
+                    <a href="{% url 'learning:hub' %}" class="btn-cc-secondary px-4 py-3 fs-6">
+                        <i class="bi bi-book-half fs-5 text-indigo"></i> Explore Compiler Theory
+                    </a>
+                </div>
+
+                <!-- Academic badge pills -->
+                <div class="d-flex flex-wrap gap-4 justify-content-center justify-content-lg-start pt-3 border-top border-subtle small text-muted">
+                    <div><i class="bi bi-check2-circle text-cyan me-1"></i> Recursive-Descent Parser</div>
+                    <div><i class="bi bi-check2-circle text-cyan me-1"></i> Multi-Scope Symbol Table</div>
+                    <div><i class="bi bi-check2-circle text-cyan me-1"></i> TAC & Quadruples</div>
+                    <div><i class="bi bi-check2-circle text-cyan me-1"></i> Constant Folding</div>
+                </div>
+            </div>
+
+            <!-- Hero Interactive Preview Card -->
+            <div class="col-lg-5">
+                <div class="cc-card p-3 shadow-lg border-subtle">
+                    <div class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom border-subtle">
+                        <div class="d-flex gap-2">
+                            <span class="d-inline-block rounded-circle bg-danger" style="width: 10px; height: 10px;"></span>
+                            <span class="d-inline-block rounded-circle bg-warning" style="width: 10px; height: 10px;"></span>
+                            <span class="d-inline-block rounded-circle bg-success" style="width: 10px; height: 10px;"></span>
+                        </div>
+                        <span class="small font-monospace text-muted">compiler_pipeline.edu</span>
+                        <span class="badge bg-success-subtle text-success small py-1 px-2"><i class="bi bi-lightning-charge-fill me-1"></i> Live</span>
+                    </div>
+
+                    <!-- Mini Code Preview -->
+                    <div class="code-viewer-block mb-3 p-3" style="max-height: 180px; overflow-y: auto;">
+                        <span class="text-secondary">// Edu-C Sample Source Code</span><br>
+                        <span class="text-indigo">int</span> a = <span class="text-warning">15</span>;<br>
+                        <span class="text-indigo">int</span> b = <span class="text-warning">4</span>;<br>
+                        <span class="text-indigo">int</span> c = (a + b) * <span class="text-warning">2</span> - <span class="text-warning">8</span>;<br>
+                        <span class="text-indigo">if</span> (c &gt; <span class="text-warning">20</span>) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;a = c * <span class="text-warning">2</span>;<br>
+                        }
+                    </div>
+
+                    <!-- Mini Intermediate Code Output Box -->
+                    <div class="p-2 rounded bg-surface border border-subtle font-monospace small mb-3">
+                        <div class="text-muted mb-1 pb-1 border-bottom border-subtle d-flex justify-content-between">
+                            <span>Generated 3-Address Code:</span>
+                            <span class="text-cyan">5 Quadruples</span>
+                        </div>
+                        <div class="text-light">t0 = 15 + 4 <span class="text-muted">(t0 = 19)</span></div>
+                        <div class="text-light">t1 = t0 * 2 <span class="text-muted">(t1 = 38)</span></div>
+                        <div class="text-light">c = t1 - 8  <span class="text-muted">(c = 30)</span></div>
+                        <div class="text-light">if_false c &gt; 20 goto L0</div>
+                        <div class="text-emerald">a = c * 2</div>
+                    </div>
+
+                    <a href="{% url 'compiler_lab:workbench' %}" class="btn btn-sm btn-cc-primary w-100 justify-content-center py-2">
+                        <i class="bi bi-arrow-right-circle-fill me-2"></i> Open in Interactive Workbench
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Visual Representation of the Compilation Pipeline -->
+<section class="py-5 bg-surface border-top border-bottom border-subtle">
+    <div class="container py-lg-4">
+        <div class="text-center max-w-700 mx-auto mb-5">
+            <span class="badge bg-indigo-500 text-white px-3 py-1 mb-2">Sequential Architecture</span>
+            <h2 class="fw-bold mb-2">The Classical 6-Stage Compiler Pipeline</h2>
+            <p class="text-secondary">Every input program traverses through well-defined phases to verify syntactic legality, enforce semantic contracts, and synthesize intermediate instructions.</p>
+        </div>
+
+        <div class="row g-3">
+            <!-- Stage 1 -->
+            <div class="col-md-4 col-lg-2">
+                <div class="pipeline-step-card text-center">
+                    <span class="pipeline-step-num">01</span>
+                    <h6 class="fw-bold mb-1">Lexical Analysis</h6>
+                    <span class="badge bg-secondary mb-2">Scanner</span>
+                    <p class="small text-secondary mb-0">Transforms raw stream into typed tokens, tracking line & column coordinates.</p>
+                </div>
+            </div>
+            <!-- Stage 2 -->
+            <div class="col-md-4 col-lg-2">
+                <div class="pipeline-step-card text-center">
+                    <span class="pipeline-step-num">02</span>
+                    <h6 class="fw-bold mb-1">Syntax Analysis</h6>
+                    <span class="badge bg-secondary mb-2">Parser</span>
+                    <p class="small text-secondary mb-0">Predictive recursive descent validates BNF grammar into an Abstract Syntax Tree.</p>
+                </div>
+            </div>
+            <!-- Stage 3 -->
+            <div class="col-md-4 col-lg-2">
+                <div class="pipeline-step-card text-center">
+                    <span class="pipeline-step-num">03</span>
+                    <h6 class="fw-bold mb-1">Semantic Check</h6>
+                    <span class="badge bg-secondary mb-2">Type Checker</span>
+                    <p class="small text-secondary mb-0">Constructs hierarchical symbol tables, checks declarations, and catches type flaws.</p>
+                </div>
+            </div>
+            <!-- Stage 4 -->
+            <div class="col-md-4 col-lg-2">
+                <div class="pipeline-step-card text-center">
+                    <span class="pipeline-step-num">04</span>
+                    <h6 class="fw-bold mb-1">Intermediate Code</h6>
+                    <span class="badge bg-secondary mb-2">ICG</span>
+                    <p class="small text-secondary mb-0">Linearizes AST into Three-Address Code instructions and 4-tuple quadruples.</p>
+                </div>
+            </div>
+            <!-- Stage 5 -->
+            <div class="col-md-4 col-lg-2">
+                <div class="pipeline-step-card text-center">
+                    <span class="pipeline-step-num">05</span>
+                    <h6 class="fw-bold mb-1">Code Optimization</h6>
+                    <span class="badge bg-secondary mb-2">Optimizer</span>
+                    <p class="small text-secondary mb-0">Executes compile-time constant folding and algebraic simplification passes.</p>
+                </div>
+            </div>
+            <!-- Stage 6 -->
+            <div class="col-md-4 col-lg-2">
+                <div class="pipeline-step-card text-center">
+                    <span class="pipeline-step-num">06</span>
+                    <h6 class="fw-bold mb-1">Target Overview</h6>
+                    <span class="badge bg-secondary mb-2">Codegen</span>
+                    <p class="small text-secondary mb-0">Maps intermediate quadruples to memory layout, register bounds, and target instructions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Feature Showcase Grid -->
+<section class="py-5">
+    <div class="container py-lg-4">
+        <div class="row align-items-center mb-5">
+            <div class="col-lg-6">
+                <span class="badge bg-cyan-500 text-dark fw-bold px-3 py-1 mb-2">Platform Capabilities</span>
+                <h2 class="fw-bold mb-0">Engineered for Deep Academic Understanding</h2>
+            </div>
+            <div class="col-lg-6 text-lg-end mt-3 mt-lg-0">
+                <a href="{% url 'learning:grammar' %}" class="btn-cc-outline-primary">
+                    <i class="bi bi-file-earmark-code me-1"></i> Read Formal BNF Grammar
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Feature 1 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="cc-card p-4 h-100">
+                    <div class="p-3 rounded-3 bg-primary-glow d-inline-block text-indigo mb-3 fs-3">
+                        <i class="bi bi-table"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Detailed Lexical Token Table</h5>
+                    <p class="text-secondary small mb-0">
+                        Inspect every token with token sequence number, precise lexeme, lexical category badge, line number, column number, and clear categorization explanations.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="cc-card p-4 h-100">
+                    <div class="p-3 rounded-3 bg-primary-glow d-inline-block text-cyan mb-3 fs-3">
+                        <i class="bi bi-diagram-3"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Interactive AST & Mermaid Graphs</h5>
+                    <p class="text-secondary small mb-0">
+                        Visualize syntax trees through native Mermaid.js flowcharts, printable ASCII text trees, and expandable JSON node representations to trace operator precedence and statement hierarchies.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="cc-card p-4 h-100">
+                    <div class="p-3 rounded-3 bg-primary-glow d-inline-block text-violet mb-3 fs-3">
+                        <i class="bi bi-database-check"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Scope-Aware Symbol Table</h5>
+                    <p class="text-secondary small mb-0">
+                        Tracks identifiers across global and nested block scopes. Computes memory offsets, verifies type compatibility, detects undeclared variables, and flags duplicate declarations.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="cc-card p-4 h-100">
+                    <div class="p-3 rounded-3 bg-primary-glow d-inline-block text-emerald mb-3 fs-3">
+                        <i class="bi bi-code-square"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Three-Address Code & Quadruples</h5>
+                    <p class="text-secondary small mb-0">
+                        Generates explicit TAC instructions (`t0 = a + b`) alongside classic 4-tuple Quadruple records `(Op, Arg1, Arg2, Result)` with temporary tracking and jump labels for branches and loops.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="cc-card p-4 h-100">
+                    <div class="p-3 rounded-3 bg-primary-glow d-inline-block text-warning mb-3 fs-3">
+                        <i class="bi bi-gear-wide-connected"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Constant Folding & Simplification</h5>
+                    <p class="text-secondary small mb-0">
+                        Includes a dedicated machine-independent optimization pass demonstrating compile-time constant arithmetic evaluation and algebraic identity reductions (`x + 0 => x`).
+                    </p>
+                </div>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="cc-card p-4 h-100">
+                    <div class="p-3 rounded-3 bg-primary-glow d-inline-block text-rose mb-3 fs-3">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Safe Execution & Persistent History</h5>
+                    <p class="text-secondary small mb-0">
+                        All code is evaluated inside a custom Python compiler engine without executing arbitrary machine code or OS commands. User history is safely isolated via SQLite database models.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section class="py-5 bg-surface border-top border-subtle">
+    <div class="container py-lg-4 text-center">
+        <div class="max-w-700 mx-auto cc-card p-5 border-hover shadow-lg">
+            <h2 class="fw-extrabold mb-3">Ready to Analyze Your First Program?</h2>
+            <p class="text-secondary mb-4 fs-5">
+                Launch the CodeCraft Workbench now. Choose from pre-configured assignment templates, inspect each compiler stage, or test your own custom C-subset expressions.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{% url 'compiler_lab:workbench' %}" class="btn-cc-primary px-4 py-3 fs-6">
+                    <i class="bi bi-play-circle-fill fs-5"></i> Open Workbench IDE
+                </a>
+                {% if not user.is_authenticated %}
+                <a href="{% url 'accounts:register' %}" class="btn-cc-secondary px-4 py-3 fs-6">
+                    <i class="bi bi-person-plus-fill fs-5"></i> Create Student Account
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

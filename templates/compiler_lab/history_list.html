@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Analysis History — CodeCraft{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom border-subtle">
+        <div>
+            <h3 class="fw-extrabold mb-1 text-gradient-primary">
+                <i class="bi bi-clock-history me-2"></i>Analysis History
+            </h3>
+            <p class="text-secondary small mb-0">Persistent log of your compiler runs, AST trees, symbol tables, and generated intermediate code.</p>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a href="{% url 'compiler_lab:workbench' %}" class="btn-cc-primary">
+                <i class="bi bi-play-circle-fill me-1"></i> New Analysis
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters and Search Bar -->
+    <div class="cc-card p-3 mb-4">
+        <form method="get" action="{% url 'compiler_lab:history_list' %}" class="row g-2 align-items-center">
+            <!-- Search Input -->
+            <div class="col-md-5">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-surface border-subtle text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control bg-surface border-subtle text-light" placeholder="Search by title or source snippet..." value="{{ query }}">
+                </div>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="col-6 col-md-3">
+                <select name="status" class="form-select form-select-sm bg-surface border-subtle text-light">
+                    <option value="">All Statuses</option>
+                    <option value="success" {% if status_filter == 'success' %}selected{% endif %}>Successful Runs</option>
+                    <option value="failed" {% if status_filter == 'failed' %}selected{% endif %}>Flagged / Errors</option>
+                </select>
+            </div>
+
+            <!-- Mode Filter -->
+            <div class="col-6 col-md-3">
+                <select name="mode" class="form-select form-select-sm bg-surface border-subtle text-light">
+                    <option value="">All Stages</option>
+                    <option value="all" {% if mode_filter == 'all' %}selected{% endif %}>Full Pipeline</option>
+                    <option value="lexical" {% if mode_filter == 'lexical' %}selected{% endif %}>Lexical Analysis</option>
+                    <option value="syntax" {% if mode_filter == 'syntax' %}selected{% endif %}>Syntax Tree</option>
+                    <option value="semantic" {% if mode_filter == 'semantic' %}selected{% endif %}>Semantic & Symbol</option>
+                    <option value="tac" {% if mode_filter == 'tac' %}selected{% endif %}>Intermediate TAC</option>
+                </select>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="col-md-1 d-flex gap-1">
+                <button type="submit" class="btn btn-sm btn-cc-primary w-100" title="Apply filter">Filter</button>
+                {% if query or status_filter or mode_filter %}
+                <a href="{% url 'compiler_lab:history_list' %}" class="btn btn-sm btn-cc-secondary" title="Reset filter"><i class="bi bi-x-lg"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- History Records Table -->
+    <div class="cc-card">
+        <div class="table-responsive">
+            <table class="table-cc mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th>Analysis Title & Snippet</th>
+                        <th>Stage Mode</th>
+                        <th>Status</th>
+                        <th>Tokens</th>
+                        <th>Latency</th>
+                        <th>Timestamp</th>
+                        <th class="text-end" style="width: 180px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rec in page_obj %}
+                    <tr>
+                        <td class="text-muted fw-bold">#{{ rec.id }}</td>
+                        <td>
+                            <a href="{% url 'compiler_lab:history_detail' rec.id %}" class="fw-bold text-light text-decoration-none hover-indigo">
+                                {{ rec.title }}
+                            </a>
+                            <div class="small text-muted font-monospace">{{ rec.snippet }}</div>
+                        </td>
+                        <td><span class="badge bg-surface border border-subtle text-secondary">{{ rec.mode|upper }}</span></td>
+                        <td>
+                            {% if rec.is_success %}
+                            <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle me-1"></i>Success</span>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger"><i class="bi bi-exclamation-triangle me-1"></i>{{ rec.error_stage|default:"Error" }}</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="font-monospace small text-violet">{{ rec.token_count }}</span></td>
+                        <td><span class="font-monospace small text-cyan">{{ rec.execution_time_ms }} ms</span></td>
+                        <td class="small text-muted">{{ rec.created_at|date:"M d, Y H:i" }}</td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'compiler_lab:history_detail' rec.id %}" class="btn btn-cc-secondary py-1 px-2" title="View Full Report">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'compiler_lab:workbench' %}?record={{ rec.id }}" class="btn btn-cc-outline-primary py-1 px-2" title="Rerun in Workbench">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger py-1 px-2" data-bs-toggle="modal" data-bs-target="#deleteModal{{ rec.id }}" title="Delete Record">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </div>
+
+                            <!-- Delete Modal -->
+                            <div class="modal fade" id="deleteModal{{ rec.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ rec.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content cc-card border-danger">
+                                        <div class="modal-header border-subtle">
+                                            <h5 class="modal-title text-danger fs-6" id="deleteModalLabel{{ rec.id }}">
+                                                <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Record Deletion
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-start">
+                                            <p class="text-secondary mb-2">Are you sure you want to permanently delete analysis record <strong>#{{ rec.id }} — {{ rec.title }}</strong>?</p>
+                                            <p class="small text-muted mb-0 font-monospace">This action is irreversible and removes the associated AST, symbol table, and intermediate code.</p>
+                                        </div>
+                                        <div class="modal-footer border-subtle">
+                                            <button type="button" class="btn btn-sm btn-cc-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <form method="post" action="{% url 'compiler_lab:history_delete' rec.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-danger">Confirm Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox fs-2 d-block mb-2 text-muted"></i>
+                            No analysis records found.
+                            {% if query or status_filter or mode_filter %}
+                            <br><a href="{% url 'compiler_lab:history_list' %}" class="btn btn-sm btn-cc-secondary mt-2">Clear Filters</a>
+                            {% else %}
+                            <br><a href="{% url 'compiler_lab:workbench' %}" class="btn btn-sm btn-cc-primary mt-2">Open Workbench</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="p-3 border-top border-subtle d-flex justify-content-between align-items-center">
+            <span class="small text-muted">Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} records</span>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link bg-surface border-subtle text-light" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if mode_filter %}&mode={{ mode_filter }}{% endif %}">&laquo;</a></li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link bg-indigo-500 border-indigo-500 text-white">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item"><a class="page-link bg-surface border-subtle text-light" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if mode_filter %}&mode={{ mode_filter }}{% endif %}">{{ num }}</a></li>
+                {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link bg-surface border-subtle text-light" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if mode_filter %}&mode={{ mode_filter }}{% endif %}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

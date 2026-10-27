@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard — CodeCraft Analytics{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-4">
+    <!-- Welcome Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-2 border-bottom border-subtle">
+        <div>
+            <h3 class="fw-extrabold mb-1 text-gradient-primary">
+                <i class="bi bi-speedometer2 me-2"></i>Developer Dashboard
+            </h3>
+            <p class="text-secondary small mb-0">Welcome back, <strong>{{ user.username }}</strong>. Real-time metrics for your compiler analysis experiments.</p>
+        </div>
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <a href="{% url 'compiler_lab:workbench' %}" class="btn-cc-primary">
+                <i class="bi bi-play-circle-fill me-1"></i> New Analysis
+            </a>
+            <a href="{% url 'compiler_lab:history_list' %}" class="btn-cc-secondary">
+                <i class="bi bi-clock-history me-1"></i> All History
+            </a>
+        </div>
+    </div>
+
+    <!-- Key Metrics Cards Row -->
+    <div class="row g-3 mb-4">
+        <!-- Metric 1: Total Analyses -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="cc-card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-secondary fw-semibold">Total Runs</span>
+                    <span class="p-2 rounded bg-primary-glow text-indigo fs-5"><i class="bi bi-terminal"></i></span>
+                </div>
+                <div class="display-6 fw-bold text-light mb-1">{{ total_analyses }}</div>
+                <div class="small text-muted">Compiler pipeline runs</div>
+            </div>
+        </div>
+
+        <!-- Metric 2: Success Rate -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="cc-card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-secondary fw-semibold">Success Rate</span>
+                    <span class="p-2 rounded bg-primary-glow text-emerald fs-5"><i class="bi bi-check-circle-fill"></i></span>
+                </div>
+                <div class="display-6 fw-bold text-emerald mb-1">{{ success_rate }}%</div>
+                <div class="small text-muted">{{ success_count }} succeeded, {{ failed_count }} flagged</div>
+            </div>
+        </div>
+
+        <!-- Metric 3: Average Latency -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="cc-card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-secondary fw-semibold">Avg. Latency</span>
+                    <span class="p-2 rounded bg-primary-glow text-cyan fs-5"><i class="bi bi-stopwatch-fill"></i></span>
+                </div>
+                <div class="display-6 fw-bold text-cyan mb-1">{{ avg_latency }} <span class="fs-6 fw-normal">ms</span></div>
+                <div class="small text-muted">Full multi-phase execution</div>
+            </div>
+        </div>
+
+        <!-- Metric 4: Total Tokens Processed -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="cc-card p-3 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-secondary fw-semibold">Tokens Lexed</span>
+                    <span class="p-2 rounded bg-primary-glow text-violet fs-5"><i class="bi bi-card-checklist"></i></span>
+                </div>
+                <div class="display-6 fw-bold text-violet mb-1">{{ total_tokens }}</div>
+                <div class="small text-muted">Across all source submissions</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts & Analytics Row -->
+    <div class="row g-4 mb-4">
+        <!-- Chart 1: Mode Distribution -->
+        <div class="col-lg-6">
+            <div class="cc-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-pie-chart-fill me-2 text-indigo"></i>Analysis Distribution by Phase</h5>
+                    <span class="badge bg-surface border border-subtle text-secondary small">Modes</span>
+                </div>
+                <div style="height: 260px; position: relative;">
+                    <canvas id="chart-modes"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 2: Success vs Errors Distribution -->
+        <div class="col-lg-6">
+            <div class="cc-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-bar-chart-fill me-2 text-cyan"></i>Verification Results Overview</h5>
+                    <span class="badge bg-surface border border-subtle text-secondary small">Integrity</span>
+                </div>
+                <div style="height: 260px; position: relative;">
+                    <canvas id="chart-status"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Analyses Table & Quick Presets -->
+    <div class="row g-4">
+        <!-- Recent History Table -->
+        <div class="col-lg-8">
+            <div class="cc-card h-100">
+                <div class="cc-card-header">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-indigo"></i>Recent Analysis Activity</h6>
+                    <a href="{% url 'compiler_lab:history_list' %}" class="small text-indigo text-decoration-none">View All <i class="bi bi-arrow-right"></i></a>
+                </div>
+                <div class="cc-card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table-cc mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Mode</th>
+                                    <th>Status</th>
+                                    <th>Latency</th>
+                                    <th>Date</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rec in recent_records %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'compiler_lab:history_detail' rec.id %}" class="fw-semibold text-light text-decoration-none hover-indigo">
+                                            {{ rec.title }}
+                                        </a>
+                                        <div class="small text-muted font-monospace">{{ rec.snippet }}</div>
+                                    </td>
+                                    <td><span class="badge bg-surface border border-subtle text-secondary">{{ rec.mode|upper }}</span></td>
+                                    <td>
+                                        {% if rec.is_success %}
+                                        <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle me-1"></i>Success</span>
+                                        {% else %}
+                                        <span class="badge bg-danger-subtle text-danger"><i class="bi bi-exclamation-triangle me-1"></i>{{ rec.error_stage|default:"Error" }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="font-monospace small text-cyan">{{ rec.execution_time_ms }} ms</span></td>
+                                    <td class="small text-muted">{{ rec.created_at|date:"M d, H:i" }}</td>
+                                    <td class="text-end">
+                                        <a href="{% url 'compiler_lab:workbench' %}?record={{ rec.id }}" class="btn btn-sm btn-cc-outline-primary py-1 px-2" title="Load into Workbench">
+                                            <i class="bi bi-arrow-repeat"></i> Rerun
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        No analysis records found. <a href="{% url 'compiler_lab:workbench' %}" class="text-indigo">Run your first analysis in the Workbench!</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Launch Presets -->
+        <div class="col-lg-4">
+            <div class="cc-card h-100">
+                <div class="cc-card-header">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-lightning-charge-fill me-2 text-amber"></i>Quick Launch Presets</h6>
+                    <span class="small text-muted">Assignments</span>
+                </div>
+                <div class="cc-card-body p-3">
+                    <div class="d-flex flex-column gap-2">
+                        {% for ex in examples %}
+                        <a href="{% url 'compiler_lab:workbench' %}?example={{ ex.id }}" class="p-3 rounded bg-surface border border-subtle text-decoration-none text-light hover-border transition">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <strong class="text-indigo small">{{ ex.title }}</strong>
+                                <span class="badge bg-secondary-subtle text-secondary small">{{ ex.category }}</span>
+                            </div>
+                            <p class="small text-muted mb-0">{{ ex.description }}</p>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modesData = {{ chart_modes_json|safe }};
+    const successCount = {{ success_count }};
+    const failedCount = {{ failed_count }};
+
+    // 1. Modes Bar/Doughnut Chart
+    const ctxModes = document.getElementById('chart-modes');
+    if (ctxModes) {
+        new Chart(ctxModes, {
+            type: 'doughnut',
+            data: {
+                labels: ['Full Pipeline', 'Lexical', 'Syntax (AST)', 'Semantic', 'Intermediate (TAC)'],
+                datasets: [{
+                    data: [
+                        modesData.all || 0,
+                        modesData.lexical || 0,
+                        modesData.syntax || 0,
+                        modesData.semantic || 0,
+                        modesData.tac || 0
+                    ],
+                    backgroundColor: ['#6366f1', '#3b82f6', '#06b6d4', '#8b5cf6', '#10b981'],
+                    borderColor: '#0b1120',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: '#94a3b8', font: { family: "'Plus Jakarta Sans', sans-serif" } }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Status Bar Chart
+    const ctxStatus = document.getElementById('chart-status');
+    if (ctxStatus) {
+        new Chart(ctxStatus, {
+            type: 'bar',
+            data: {
+                labels: ['Successful Analyses', 'Flagged / Syntax / Semantic Errors'],
+                datasets: [{
+                    label: 'Count',
+                    data: [successCount, failedCount],
+                    backgroundColor: ['#10b981', '#f43f5e'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#94a3b8' },
+                        grid: { display: false }
+                    },
+                    y: {
+                        ticks: { color: '#94a3b8', stepSize: 1 },
+                        grid: { color: 'rgba(148, 163, 184, 0.1)' }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

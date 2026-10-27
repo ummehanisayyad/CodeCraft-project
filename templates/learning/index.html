@@ -1,0 +1,310 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Compiler Design Learning Hub — CodeCraft{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Hub Header -->
+    <div class="text-center max-w-750 mx-auto mb-5">
+        <span class="badge bg-indigo-500 text-white px-3 py-1 mb-2">Academic Curriculum Reference</span>
+        <h2 class="display-6 fw-extrabold mb-2 text-gradient-primary">
+            Compiler Design Theory & Architecture
+        </h2>
+        <p class="text-secondary fs-6">
+            A comprehensive reference covering the 6 classical phases of compiler engineering, language grammars, intermediate representations, and optimization strategies for {{ ACADEMIC_COURSE }}.
+        </p>
+    </div>
+
+    <!-- Phase Selector Cards -->
+    <div class="row g-3 mb-5">
+        <div class="col-md-4 col-lg-2">
+            <a href="#phase-1-lexical" class="p-3 rounded cc-card text-decoration-none text-light d-block text-center h-100 hover-border">
+                <div class="text-indigo fs-3 mb-1"><i class="bi bi-card-text"></i></div>
+                <strong class="d-block small">1. Lexical</strong>
+                <span class="badge bg-success-subtle text-success mt-1 fs-9">Implemented</span>
+            </a>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <a href="#phase-2-syntax" class="p-3 rounded cc-card text-decoration-none text-light d-block text-center h-100 hover-border">
+                <div class="text-cyan fs-3 mb-1"><i class="bi bi-diagram-3"></i></div>
+                <strong class="d-block small">2. Syntax</strong>
+                <span class="badge bg-success-subtle text-success mt-1 fs-9">Implemented</span>
+            </a>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <a href="#phase-3-semantic" class="p-3 rounded cc-card text-decoration-none text-light d-block text-center h-100 hover-border">
+                <div class="text-violet fs-3 mb-1"><i class="bi bi-shield-check"></i></div>
+                <strong class="d-block small">3. Semantic</strong>
+                <span class="badge bg-success-subtle text-success mt-1 fs-9">Implemented</span>
+            </a>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <a href="#phase-4-icg" class="p-3 rounded cc-card text-decoration-none text-light d-block text-center h-100 hover-border">
+                <div class="text-emerald fs-3 mb-1"><i class="bi bi-code-square"></i></div>
+                <strong class="d-block small">4. ICG / TAC</strong>
+                <span class="badge bg-success-subtle text-success mt-1 fs-9">Implemented</span>
+            </a>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <a href="#phase-5-optimization" class="p-3 rounded cc-card text-decoration-none text-light d-block text-center h-100 hover-border">
+                <div class="text-amber fs-3 mb-1"><i class="bi bi-lightning-charge"></i></div>
+                <strong class="d-block small">5. Optimization</strong>
+                <span class="badge bg-success-subtle text-success mt-1 fs-9">Implemented</span>
+            </a>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <a href="#phase-6-codegen" class="p-3 rounded cc-card text-decoration-none text-light d-block text-center h-100 hover-border">
+                <div class="text-secondary fs-3 mb-1"><i class="bi bi-cpu"></i></div>
+                <strong class="d-block small">6. Target Gen</strong>
+                <span class="badge bg-secondary-subtle text-secondary mt-1 fs-9">Theory Only</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Phase 1: Lexical Analysis -->
+    <div id="phase-1-lexical" class="cc-card p-4 p-md-5 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="pipeline-step-num mb-0">1</span>
+                <h4 class="fw-bold mb-0 text-light">Phase 1: Lexical Analysis (Scanning)</h4>
+            </div>
+            <span class="badge bg-success text-white py-1 px-3">Live in CodeCraft</span>
+        </div>
+        <p class="text-secondary">
+            Lexical analysis is the initial phase of a compiler that converts the input source text into a sequential stream of discrete <strong>tokens</strong>. It eliminates whitespace, processes comments, and flags unrecognized characters.
+        </p>
+
+        <div class="row g-4 mt-2">
+            <div class="col-lg-6">
+                <h6 class="fw-bold text-light mb-2">Key Lexical Concepts:</h6>
+                <ul class="list-unstyled small text-secondary">
+                    <li class="mb-2"><strong class="text-indigo">Token:</strong> An abstract category representing a terminal element (e.g. <code>KEYWORD</code>, <code>IDENTIFIER</code>, <code>INT_LITERAL</code>).</li>
+                    <li class="mb-2"><strong class="text-indigo">Lexeme:</strong> The literal character sequence matching a token pattern (e.g. <code>while</code>, <code>counter_val</code>, <code>3.1415</code>).</li>
+                    <li class="mb-2"><strong class="text-indigo">Pattern:</strong> A formal regular expression specifying what forms valid instances of a token.</li>
+                    <li class="mb-2"><strong class="text-indigo">Finite Automaton (DFA/NFA):</strong> The mathematical state-machine model used to recognize regular expressions deterministically.</li>
+                </ul>
+            </div>
+            <div class="col-lg-6">
+                <h6 class="fw-bold text-light mb-2">CodeCraft Implementation:</h6>
+                <div class="code-viewer-block small">
+                    <span class="text-muted">// Input Lexeme Stream:</span><br>
+                    <span class="text-info">int</span> <span class="text-light">count</span> = <span class="text-warning">10</span>; <span class="text-muted">// line 1</span><br><br>
+                    <span class="text-muted">// Generated Token Stream:</span><br>
+                    1. Token(KEYWORD, 'int', line=1, col=1)<br>
+                    2. Token(IDENTIFIER, 'count', line=1, col=5)<br>
+                    3. Token(OP_ASSIGNMENT, '=', line=1, col=11)<br>
+                    4. Token(INT_LITERAL, 10, line=1, col=13)<br>
+                    5. Token(SEPARATOR, ';', line=1, col=15)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 2: Syntax Analysis -->
+    <div id="phase-2-syntax" class="cc-card p-4 p-md-5 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="pipeline-step-num mb-0">2</span>
+                <h4 class="fw-bold mb-0 text-light">Phase 2: Syntax Analysis (Parsing)</h4>
+            </div>
+            <span class="badge bg-success text-white py-1 px-3">Live in CodeCraft</span>
+        </div>
+        <p class="text-secondary">
+            Syntax analysis validates whether the token stream adheres to the structural rules of the language defined by a <strong>Context-Free Grammar (CFG)</strong>. It constructs an <strong>Abstract Syntax Tree (AST)</strong> and executes error recovery.
+        </p>
+
+        <div class="row g-4 mt-2">
+            <div class="col-lg-6">
+                <h6 class="fw-bold text-light mb-2">Parsing Methodologies:</h6>
+                <div class="small text-secondary">
+                    <p class="mb-2"><strong class="text-cyan">Top-Down Parsing (LL):</strong> Starts from the start symbol and tries to derive the sentence. CodeCraft implements a <em>Predictive Recursive-Descent Parser</em> with backtracking-free precedence climbing.</p>
+                    <p class="mb-2"><strong class="text-cyan">Bottom-Up Parsing (LR/LALR):</strong> Shifts tokens and reduces matching handles until the start symbol is reached (e.g. Yacc/Bison).</p>
+                    <p class="mb-0"><strong class="text-cyan">Precedence Climbing:</strong> Enforces standard mathematical ordering: Multiplicative (<code>*</code>, <code>/</code>) &gt; Additive (<code>+</code>, <code>-</code>) &gt; Relational (<code>&gt;=</code>) &gt; Equality (<code>==</code>) &gt; Logical AND (<code>&&</code>) &gt; Logical OR (<code>||</code>).</p>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <h6 class="fw-bold text-light mb-2">Mermaid.js Visual AST Diagram:</h6>
+                <div class="p-3 rounded bg-surface border border-subtle text-center">
+                    <div class="mermaid">
+                    graph TD
+                        P["Program"] --> V["VarDecl: int result ="]
+                        V --> B["BinaryOp '-'"]
+                        B --> M["BinaryOp '*'"]
+                        M --> A["BinaryOp '+'"]
+                        A --> ID1["Id: a"]
+                        A --> ID2["Id: b"]
+                        M --> NUM1["Literal: 2"]
+                        B --> NUM2["Literal: 8"]
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 3: Semantic Analysis -->
+    <div id="phase-3-semantic" class="cc-card p-4 p-md-5 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="pipeline-step-num mb-0">3</span>
+                <h4 class="fw-bold mb-0 text-light">Phase 3: Semantic Analysis & Symbol Tables</h4>
+            </div>
+            <span class="badge bg-success text-white py-1 px-3">Live in CodeCraft</span>
+        </div>
+        <p class="text-secondary">
+            While syntax determines grammar legality, semantic analysis verifies meaning. It answers: <em>Has this variable been declared?</em> <em>Are these operand types compatible?</em> <em>Is a variable being read before being initialized?</em>
+        </p>
+
+        <div class="row g-4 mt-2">
+            <div class="col-lg-6">
+                <h6 class="fw-bold text-light mb-2">Symbol Table Architecture:</h6>
+                <p class="small text-secondary mb-2">
+                    A symbol table is a hierarchical dictionary that maps variable and function names to their type, scope depth, declaration line, and memory attributes. When entering a nested block <code>{ ... }</code>, a child scope is pushed onto the scope stack and popped on exit.
+                </p>
+                <div class="table-responsive small">
+                    <table class="table-cc">
+                        <thead>
+                            <tr><th>Name</th><th>Type</th><th>Scope</th><th>Memory</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>x</code></td><td>int</td><td>global (L0)</td><td>4 Bytes</td></tr>
+                            <tr><td><code>total</code></td><td>float</td><td>global (L0)</td><td>8 Bytes</td></tr>
+                            <tr><td><code>temp</code></td><td>int</td><td>block_1 (L1)</td><td>4 Bytes</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <h6 class="fw-bold text-light mb-2">Semantic Errors Detected by CodeCraft:</h6>
+                <div class="alert alert-danger py-2 small mb-2">
+                    <i class="bi bi-x-circle-fill me-1"></i> <strong>Undeclared Identifier:</strong> <code>x = 20;</code> without prior declaration.
+                </div>
+                <div class="alert alert-danger py-2 small mb-2">
+                    <i class="bi bi-x-circle-fill me-1"></i> <strong>Duplicate Declaration:</strong> Declaring <code>int a;</code> twice in the same scope.
+                </div>
+                <div class="alert alert-warning py-2 small mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>Narrowing Conversion:</strong> Assigning float expression to int variable.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 4: Intermediate Code Generation -->
+    <div id="phase-4-icg" class="cc-card p-4 p-md-5 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="pipeline-step-num mb-0">4</span>
+                <h4 class="fw-bold mb-0 text-light">Phase 4: Intermediate Code Generation (ICG)</h4>
+            </div>
+            <span class="badge bg-success text-white py-1 px-3">Live in CodeCraft</span>
+        </div>
+        <p class="text-secondary">
+            Intermediate representations decouple language-specific syntax from machine-specific assembly. CodeCraft synthesizes linearized <strong>Three-Address Code (TAC)</strong> and classic <strong>Quadruples</strong>.
+        </p>
+
+        <div class="row g-4 mt-2">
+            <div class="col-lg-6">
+                <h6 class="fw-bold text-light mb-2">Three-Address Code (TAC):</h6>
+                <p class="small text-secondary mb-2">
+                    Each instruction has at most one operator on the right-hand side and utilizes compiler-generated temporary variables (<code>t0</code>, <code>t1</code>, ...):
+                </p>
+                <div class="code-viewer-block small">
+                    <span class="text-muted">// Source Expression: x = a + b * c;</span><br>
+                    t0 = b * c<br>
+                    t1 = a + t0<br>
+                    x = t1
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <h6 class="fw-bold text-light mb-2">Quadruple 4-Tuples (Op, Arg1, Arg2, Result):</h6>
+                <div class="table-responsive small">
+                    <table class="table-cc">
+                        <thead>
+                            <tr><th>#</th><th>Op</th><th>Arg1</th><th>Arg2</th><th>Result</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>(0)</td><td>*</td><td>b</td><td>c</td><td>t0</td></tr>
+                            <tr><td>(1)</td><td>+</td><td>a</td><td>t0</td><td>t1</td></tr>
+                            <tr><td>(2)</td><td>=</td><td>t1</td><td>-</td><td>x</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 5: Code Optimization -->
+    <div id="phase-5-optimization" class="cc-card p-4 p-md-5 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="pipeline-step-num mb-0">5</span>
+                <h4 class="fw-bold mb-0 text-light">Phase 5: Machine-Independent Code Optimization</h4>
+            </div>
+            <span class="badge bg-success text-white py-1 px-3">Live in CodeCraft</span>
+        </div>
+        <p class="text-secondary">
+            Optimizations improve performance, reduce instruction counts, and shrink memory footprint without altering program semantics.
+        </p>
+
+        <div class="row g-3 small">
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3 rounded bg-surface border border-subtle h-100">
+                    <strong class="text-light d-block mb-1">Constant Folding</strong>
+                    <p class="text-secondary mb-0">Computes operations on known constants at compile time rather than runtime (e.g. <code>t0 = 10 + 20</code> becomes <code>t0 = 30</code>).</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3 rounded bg-surface border border-subtle h-100">
+                    <strong class="text-light d-block mb-1">Algebraic Identities</strong>
+                    <p class="text-secondary mb-0">Simplifies arithmetic rules such as <code>x + 0 => x</code>, <code>x * 1 => x</code>, and <code>x * 0 => 0</code>.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3 rounded bg-surface border border-subtle h-100">
+                    <strong class="text-light d-block mb-1">Dead Code Elimination</strong>
+                    <p class="text-secondary mb-0">Discards code branches and temporary variables whose outputs never affect the program outcome.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3 rounded bg-surface border border-subtle h-100">
+                    <strong class="text-light d-block mb-1">Common Subexpression</strong>
+                    <p class="text-secondary mb-0">Reuses previous computation results if the operand values have not been modified.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phase 6: Code Generation -->
+    <div id="phase-6-codegen" class="cc-card p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="pipeline-step-num mb-0">6</span>
+                <h4 class="fw-bold mb-0 text-light">Phase 6: Target Code Generation (Machine Code)</h4>
+            </div>
+            <span class="badge bg-secondary text-light py-1 px-3">Curriculum Theory Topic</span>
+        </div>
+        <p class="text-secondary">
+            The final compiler phase maps intermediate quadruples into specific target machine assembly (such as x86-64, ARM, or MIPS).
+        </p>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <h6 class="fw-bold text-light mb-2">Key Challenges in Target Generation:</h6>
+                <ul class="list-unstyled small text-secondary">
+                    <li class="mb-2"><strong class="text-secondary">Register Allocation:</strong> Assigning frequently accessed variables to hardware registers (R0, R1, EAX) via Graph Coloring or Linear Scan.</li>
+                    <li class="mb-2"><strong class="text-secondary">Instruction Selection:</strong> Choosing the optimal machine opcode (e.g. <code>LEA</code> vs <code>ADD</code>) to minimize CPU cycles.</li>
+                    <li class="mb-2"><strong class="text-secondary">Memory Addressing:</strong> Managing the call stack, stack frames, base pointers (EBP), and offset offsets.</li>
+                </ul>
+            </div>
+            <div class="col-lg-6">
+                <div class="alert alert-secondary py-3 small mb-0">
+                    <h6 class="fw-bold mb-1"><i class="bi bi-info-circle me-1"></i> Academic Note</h6>
+                    <p class="mb-0 text-muted">
+                        In educational Compiler Design coursework, phases 1 through 5 (Lexer, Parser, Semantics, TAC, and Optimization) form the core lab implementation. Target generation is studied as theoretical architecture mapping.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

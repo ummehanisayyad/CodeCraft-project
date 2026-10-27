@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About & Academic Documentation — CodeCraft{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="text-center max-w-750 mx-auto mb-5">
+        <span class="badge bg-indigo-500 text-white px-3 py-1 mb-2">Academic Project Specification</span>
+        <h2 class="display-6 fw-extrabold mb-2 text-gradient-primary">
+            About CodeCraft
+        </h2>
+        <p class="text-secondary fs-6">
+            An Interactive Compiler Design and Code Analysis Platform engineered for Third-Year Bachelor of Engineering in Computer Science and Engineering (Fifth Semester TEC assignment).
+        </p>
+    </div>
+
+    <!-- Academic Context Card -->
+    <div class="cc-card p-4 p-md-5 mb-5 border-indigo">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-7">
+                <h4 class="fw-bold text-light mb-3"><i class="bi bi-mortarboard-fill me-2 text-indigo"></i> Academic Context & Purpose</h4>
+                <p class="text-secondary mb-3">
+                    In traditional undergraduate computer science education, compiler construction courses frequently rely on abstract theory or legacy CLI utilities (e.g. Lex, Flex, Yacc) which provide limited visual feedback during the intermediate stages of code translation.
+                </p>
+                <p class="text-secondary mb-3">
+                    <strong>CodeCraft</strong> bridges this pedagogical gap by providing an end-to-end interactive developer lab. Students can write or load C-subset code, execute multi-stage compilation in a sandboxed Python environment, and immediately inspect generated tokens, visual abstract syntax trees, multi-scope symbol tables, and linearized Three-Address Code quadruples.
+                </p>
+                <div class="row g-2 small text-secondary">
+                    <div class="col-6"><strong>Course:</strong> {{ ACADEMIC_COURSE }}</div>
+                    <div class="col-6"><strong>Program:</strong> B.E. Computer Science & Engineering</div>
+                    <div class="col-6"><strong>Level:</strong> {{ ACADEMIC_YEAR }}</div>
+                    <div class="col-6"><strong>Semester:</strong> {{ ACADEMIC_SEMESTER }}</div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="p-4 rounded bg-surface border border-subtle">
+                    <h6 class="fw-bold text-light mb-3"><i class="bi bi-person-badge-fill me-2 text-cyan"></i> Project Contributor Info</h6>
+                    <div class="small text-secondary mb-3">
+                        <div class="mb-2"><strong>Student Developer:</strong> [Configurable Placeholder]</div>
+                        <div class="mb-2"><strong>Roll / Register Number:</strong> [Configurable Roll No]</div>
+                        <div class="mb-2"><strong>Department:</strong> Computer Science & Engineering</div>
+                        <div class="mb-2"><strong>Assignment Track:</strong> Technical Evaluation Component (TEC)</div>
+                    </div>
+                    <div class="badge bg-primary-glow text-cyan d-block text-center py-2">
+                        Third Year B.E. CSE Compiler Design
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technology Stack -->
+    <div class="cc-card p-4 p-md-5 mb-5">
+        <h4 class="fw-bold text-light mb-4"><i class="bi bi-stack me-2 text-cyan"></i> Full-Stack Technology Architecture</h4>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3 rounded bg-surface border border-subtle h-100">
+                    <div class="text-indigo fs-3 mb-2"><i class="bi bi-cpu-fill"></i></div>
+                    <h6 class="fw-bold text-light mb-1">Backend Framework</h6>
+                    <strong class="text-indigo small d-block mb-2">Python 3.13 & Django 6.0</strong>
+                    <p class="small text-secondary mb-0">Standard Django architecture with modular apps (<code>accounts</code>, <code>compiler_lab</code>, <code>dashboard</code>, <code>learning</code>), robust ORM models, CSRF defense, and custom execution engines.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3 rounded bg-surface border border-subtle h-100">
+                    <div class="text-cyan fs-3 mb-2"><i class="bi bi-database-fill"></i></div>
+                    <h6 class="fw-bold text-light mb-1">Database Layer</h6>
+                    <strong class="text-cyan small d-block mb-2">SQLite 3 ORM</strong>
+                    <p class="small text-secondary mb-0">Persistent analysis history models, user ownership isolation, JSONFields for serialized tokens, ASTs, and quadruples, and automated migration seeding.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3 rounded bg-surface border border-subtle h-100">
+                    <div class="text-violet fs-3 mb-2"><i class="bi bi-palette-fill"></i></div>
+                    <h6 class="fw-bold text-light mb-1">UI & Styling</h6>
+                    <strong class="text-violet small d-block mb-2">Bootstrap 5.3 & Custom CSS</strong>
+                    <p class="small text-secondary mb-0">Dark navy aesthetic with indigo/violet/cyan accents, glassmorphism cards, responsive layouts for mobile and desktop, and dual dark/light theme toggle.</p>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="p-3 rounded bg-surface border border-subtle h-100">
+                    <div class="text-emerald fs-3 mb-2"><i class="bi bi-diagram-3-fill"></i></div>
+                    <h6 class="fw-bold text-light mb-1">Visualization & Charts</h6>
+                    <strong class="text-emerald small d-block mb-2">CodeMirror, Mermaid & Chart.js</strong>
+                    <p class="small text-secondary mb-0">In-browser CodeMirror syntax-highlighted editor, dynamic Mermaid.js flowchart rendering for ASTs, and Chart.js dashboards for compiler execution metrics.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Outcomes -->
+    <div class="cc-card p-4 p-md-5">
+        <h4 class="fw-bold text-light mb-4"><i class="bi bi-award-fill me-2 text-amber"></i> Key Learning Outcomes & Competencies</h4>
+        <div class="row g-3 small text-secondary">
+            <div class="col-md-6">
+                <div class="d-flex align-items-start gap-2 mb-3">
+                    <i class="bi bi-check-circle-fill text-emerald fs-5"></i>
+                    <div>
+                        <strong class="text-light">1. Lexical Pattern Recognition:</strong>
+                        <div>Mastered deterministic finite automata (DFA) state transitions, token categorization, line/column coordinate tracking, and error recovery for invalid symbols.</div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start gap-2 mb-3">
+                    <i class="bi bi-check-circle-fill text-emerald fs-5"></i>
+                    <div>
+                        <strong class="text-light">2. Context-Free Parsing & AST Construction:</strong>
+                        <div>Designed predictive recursive-descent parsing algorithms that resolve operator precedence climbing and construct navigable abstract syntax trees.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="d-flex align-items-start gap-2 mb-3">
+                    <i class="bi bi-check-circle-fill text-emerald fs-5"></i>
+                    <div>
+                        <strong class="text-light">3. Multi-Scope Symbol Management:</strong>
+                        <div>Implemented block-scoped symbol tables to track variable lifetimes, detect undeclared identifier usage, and perform compile-time type verification.</div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start gap-2 mb-3">
+                    <i class="bi bi-check-circle-fill text-emerald fs-5"></i>
+                    <div>
+                        <strong class="text-light">4. Intermediate Code Synthesis & Optimization:</strong>
+                        <div>Formulated Three-Address Code generation with quadruples, temporary register allocation, jump label routing, and machine-independent constant folding passes.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
